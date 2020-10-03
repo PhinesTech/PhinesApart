@@ -14,3 +14,15 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter, view our
 [online documentation](https://flutter.dev/docs), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## Installing New Packages
+
+`ctrl + shift + P` to search for commands
+
+```bash
+$ flutter clean
+$ flutter packages get
+$ flutter packages upgrade
+```
+
+Then `crtl + shift + P` and search for `Developer: Reload Window`
