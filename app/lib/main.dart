@@ -13,259 +13,223 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class MyApp extends StatelessWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Nearby Connections example app'),
-        ),
-        body: Body(),
-      ),
+  Widget build(BuildContext ctxt) {
+    return new MaterialApp(
+        home: new SplashScreen(), debugShowCheckedModeBanner: false);
+  }
+}
+
+class SplashScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext ctxt) {
+    return new Scaffold(
+      body: SingleChildScrollView(
+          child: Stack(
+        children: [
+          Column(
+            children: <Widget>[Image.asset('assets/images/splash-screen.png')],
+          ),
+          Positioned(
+              top: 500,
+              right: 250,
+              child: new Checkbox(
+                  value: false,
+                  onChanged: (bool newValue) {
+                    Navigator.push(
+                      ctxt,
+                      new MaterialPageRoute(
+                          builder: (ctxt) => new RequirementsScreen()),
+                    );
+                  }))
+        ],
+      )),
     );
   }
 }
 
-class Body extends StatefulWidget {
+class RequirementsScreen extends StatelessWidget {
   @override
-  _MyBodyState createState() => _MyBodyState();
+  Widget build(BuildContext ctxt) {
+    return new Scaffold(
+        // appBar: new AppBar(
+        //   title: new Text("Requirements"),
+        // ),
+        body: SingleChildScrollView(
+            child: Stack(children: [
+      Column(
+        children: <Widget>[
+          Image.asset(
+            'assets/images/requirements-and-symptoms.png',
+            fit: BoxFit.fill,
+            width: MediaQuery.of(ctxt).size.width,
+            // height: MediaQuery.of(ctxt).size.height,
+          )
+        ],
+      ),
+      Positioned(
+          top: 175,
+          right: 200,
+          child: Checkbox(
+              value: false,
+              onChanged: (bool newValue) {
+                Navigator.push(
+                  ctxt,
+                  new MaterialPageRoute(builder: (ctxt) => new Home()),
+                );
+              }))
+    ])));
+  }
 }
 
-class _MyBodyState extends State<Body> {
-  final String userName = Random().nextInt(10000).toString();
-  final Strategy strategy = Strategy.P2P_STAR;
-
-  String cId = "0"; //currently connected device ID
-  File tempFile; //reference to the file currently being transferred
-  Map<int, String> map =
-      Map(); //store filename mapped to corresponding payloadId
-
+class Home extends StatelessWidget {
   @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ListView(
-          children: <Widget>[
-            Text(
-              "Permissions",
-            ),
-            Wrap(
-              children: <Widget>[
-                RaisedButton(
-                  child: Text("checkLocationPermission"),
-                  onPressed: () async {
-                    if (await Nearby().checkLocationPermission()) {
-                      Scaffold.of(context).showSnackBar(SnackBar(
-                          content: Text("Location permissions granted :)")));
-                    } else {
-                      Scaffold.of(context).showSnackBar(SnackBar(
-                          content:
-                              Text("Location permissions not granted :(")));
-                    }
-                  },
-                ),
-                RaisedButton(
-                  child: Text("askLocationPermission"),
-                  onPressed: () async {
-                    if (await Nearby().askLocationPermission()) {
-                      Scaffold.of(context).showSnackBar(SnackBar(
-                          content: Text("Location Permission granted :)")));
-                    } else {
-                      Scaffold.of(context).showSnackBar(SnackBar(
-                          content:
-                              Text("Location permissions not granted :(")));
-                    }
-                  },
-                ),
-                RaisedButton(
-                  child: Text("checkExternalStoragePermission"),
-                  onPressed: () async {
-                    if (await Nearby().checkExternalStoragePermission()) {
-                      Scaffold.of(context).showSnackBar(SnackBar(
-                          content:
-                              Text("External Storage permissions granted :)")));
-                    } else {
-                      Scaffold.of(context).showSnackBar(SnackBar(
-                          content: Text(
-                              "External Storage permissions not granted :(")));
-                    }
-                  },
-                ),
-                RaisedButton(
-                  child: Text("askExternalStoragePermission"),
-                  onPressed: () {
-                    Nearby().askExternalStoragePermission();
-                  },
-                ),
-              ],
-            ),
-            Divider(),
-            Text("Location Enabled"),
-            Wrap(
-              children: <Widget>[
-                RaisedButton(
-                  child: Text("checkLocationEnabled"),
-                  onPressed: () async {
-                    if (await Nearby().checkLocationEnabled()) {
-                      Scaffold.of(context).showSnackBar(
-                          SnackBar(content: Text("Location is ON :)")));
-                    } else {
-                      Scaffold.of(context).showSnackBar(
-                          SnackBar(content: Text("Location is OFF :(")));
-                    }
-                  },
-                ),
-                RaisedButton(
-                  child: Text("enableLocationServices"),
-                  onPressed: () async {
-                    if (await Nearby().enableLocationServices()) {
-                      Scaffold.of(context).showSnackBar(SnackBar(
-                          content: Text("Location Service Enabled :)")));
-                    } else {
-                      Scaffold.of(context).showSnackBar(SnackBar(
-                          content:
-                              Text("Enabling Location Service Failed :(")));
-                    }
-                  },
-                ),
-              ],
-            ),
-            Divider(),
-            Text("User Name: " + userName),
-            Wrap(
-              children: <Widget>[
-                RaisedButton(
-                  child: Text("Start Advertising"),
-                  onPressed: () async {
-                    try {
-                      bool a = await Nearby().startAdvertising(
-                        userName,
-                        strategy,
-                        onConnectionInitiated: onConnectionInit,
-                        onConnectionResult: (id, status) {
-                          showSnackbar(status);
-                        },
-                        onDisconnected: (id) {
-                          showSnackbar("Disconnected: " + id);
-                        },
-                      );
-                      showSnackbar("ADVERTISING: " + a.toString());
-                    } catch (exception) {
-                      showSnackbar(exception);
-                    }
-                  },
-                ),
-                RaisedButton(
-                  child: Text("Stop Advertising"),
-                  onPressed: () async {
-                    await Nearby().stopAdvertising();
-                  },
-                ),
-              ],
-            ),
-            Wrap(
-              children: <Widget>[
-                RaisedButton(
-                  child: Text("Start Discovery"),
-                  onPressed: () async {
-                    try {
-                      bool a = await Nearby().startDiscovery(
-                        userName,
-                        strategy,
-                        onEndpointFound: (id, name, serviceId) {
-                          // show sheet automatically to request connection
-                          showModalBottomSheet(
-                            context: context,
-                            builder: (builder) {
-                              return Center(
-                                child: Column(
-                                  children: <Widget>[
-                                    Text("id: " + id),
-                                    Text("Name: " + name),
-                                    Text("ServiceId: " + serviceId),
-                                    RaisedButton(
-                                      child: Text("Request Connection"),
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                        Nearby().requestConnection(
-                                          userName,
-                                          id,
-                                          onConnectionInitiated: (id, info) {
-                                            onConnectionInit(id, info);
-                                          },
-                                          onConnectionResult: (id, status) {
-                                            showSnackbar(status);
-                                          },
-                                          onDisconnected: (id) {
-                                            showSnackbar(id);
-                                          },
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          );
-                        },
-                        onEndpointLost: (id) {
-                          showSnackbar("Lost Endpoint:" + id);
-                        },
-                      );
-                      showSnackbar("DISCOVERING: " + a.toString());
-                    } catch (e) {
-                      showSnackbar(e);
-                    }
-                  },
-                ),
-                RaisedButton(
-                  child: Text("Stop Discovery"),
-                  onPressed: () async {
-                    await Nearby().stopDiscovery();
-                  },
-                ),
-              ],
-            ),
-            RaisedButton(
-              child: Text("Stop All Endpoints"),
-              onPressed: () async {
-                await Nearby().stopAllEndpoints();
-              },
-            ),
-            Divider(),
-            Text(
-              "Sending Data",
-            ),
-            RaisedButton(
-              child: Text("Send Random Bytes Payload"),
-              onPressed: () async {
-                String a = Random().nextInt(100).toString();
-                showSnackbar("Sending $a to $cId");
-                Nearby().sendBytesPayload(cId, Uint8List.fromList(a.codeUnits));
-              },
-            ),
-            RaisedButton(
-              child: Text("Send File Payload"),
-              onPressed: () async {
-                File file =
-                    await ImagePicker.pickImage(source: ImageSource.gallery);
-
-                if (file == null) return;
-
-                int payloadId = await Nearby().sendFilePayload(cId, file.path);
-                showSnackbar("Sending file to $cId");
-                Nearby().sendBytesPayload(
-                    cId,
-                    Uint8List.fromList(
-                        "$payloadId:${file.path.split('/').last}".codeUnits));
-              },
-            ),
-          ],
-        ),
+  Widget build(BuildContext ctxt) {
+    return new Scaffold(
+        // appBar: new AppBar(),
+        body: SingleChildScrollView(
+            child: Stack(children: [
+      Column(
+        children: <Widget>[
+          Image.asset(
+            'assets/images/tracker.png',
+            fit: BoxFit.fill,
+            width: MediaQuery.of(ctxt).size.width,
+            height: MediaQuery.of(ctxt).size.height,
+          )
+        ],
       ),
-    );
+      Positioned(
+          top: 2,
+          right: 380,
+          child: Checkbox(
+              value: false,
+              onChanged: (bool newValue) {
+                Navigator.push(
+                  ctxt,
+                  new MaterialPageRoute(builder: (ctxt) => new Settings()),
+                );
+              })),
+      Positioned(
+          top: 2,
+          right: 15,
+          child: Checkbox(
+              value: false,
+              onChanged: (bool newValue) {
+                Navigator.push(
+                  ctxt,
+                  new MaterialPageRoute(builder: (ctxt) => new Charts()),
+                );
+              })),
+      Positioned(
+          top: 740,
+          right: 190,
+          child: Checkbox(
+              value: false,
+              onChanged: (bool newValue) {
+                Navigator.push(
+                  ctxt,
+                  new MaterialPageRoute(builder: (ctxt) => new Donate()),
+                );
+              }))
+    ])));
+  }
+}
+
+class Settings extends StatelessWidget {
+  @override
+  Widget build(BuildContext ctxt) {
+    return new Scaffold(
+        // appBar: new AppBar(),
+        body: SingleChildScrollView(
+            child: Stack(children: [
+      Column(
+        children: <Widget>[
+          Image.asset(
+            'assets/images/settings-page.png',
+            fit: BoxFit.fill,
+            width: MediaQuery.of(ctxt).size.width,
+            height: MediaQuery.of(ctxt).size.height,
+          )
+        ],
+      ),
+      Positioned(
+          top: 32,
+          right: 190,
+          child: Checkbox(
+              value: false,
+              onChanged: (bool newValue) {
+                Navigator.push(
+                  ctxt,
+                  new MaterialPageRoute(builder: (ctxt) => new Home()),
+                );
+              })),
+    ])));
+  }
+}
+
+class Charts extends StatelessWidget {
+  @override
+  Widget build(BuildContext ctxt) {
+    return new Scaffold(
+        // appBar: new AppBar(),
+        body: SingleChildScrollView(
+            child: Stack(children: [
+      Column(
+        children: <Widget>[
+          Image.asset(
+            'assets/images/charts.png',
+            fit: BoxFit.fill,
+            width: MediaQuery.of(ctxt).size.width,
+            height: MediaQuery.of(ctxt).size.height,
+          )
+        ],
+      ),
+      Positioned(
+          top: 32,
+          right: 190,
+          child: Checkbox(
+              value: false,
+              onChanged: (bool newValue) {
+                Navigator.push(
+                  ctxt,
+                  new MaterialPageRoute(builder: (ctxt) => new Home()),
+                );
+              }))
+    ])));
+  }
+}
+
+class Donate extends StatelessWidget {
+  @override
+  Widget build(BuildContext ctxt) {
+    return new Scaffold(
+        // appBar: new AppBar(),
+        body: SingleChildScrollView(
+            child: Stack(children: [
+      Column(
+        children: <Widget>[
+          Image.asset(
+            'assets/images/donations.png',
+            fit: BoxFit.fill,
+            width: MediaQuery.of(ctxt).size.width,
+            height: MediaQuery.of(ctxt).size.height,
+          )
+        ],
+      ),
+      Positioned(
+          top: 0,
+          right: 385,
+          child: Checkbox(
+              value: false,
+              onChanged: (bool newValue) {
+                Navigator.push(
+                  ctxt,
+                  new MaterialPageRoute(builder: (ctxt) => new Home()),
+                );
+              }))
+    ])));
   }
 
   void showSnackbar(dynamic a) {
